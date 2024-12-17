@@ -15,7 +15,7 @@ type album struct {
 
 var albums = []album{
 	{ID: "1", Title: "Forever", Artist: "Mystery Skulls", Price: 18.66},
-	{ID: "2", Title: "DDC", Artist: "Nothing but thieves", Price: 20.66},
+	{ID: "2", Title: "DDC", Artist: "Nothing but thieves", Price: 20.96},
 }
 
 func getAlbum(c *gin.Context) {
