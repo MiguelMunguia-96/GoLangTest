@@ -1,32 +1,24 @@
-package main
+package server
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+
+	A "web-service-gin/internal/model"
 )
 
-type Album struct {
-	ID          string `json:"id"`
-	Title       string `json:"title"`
-	Artist      string `json:"artist"`
-	MetaReady   bool   `json:"metaReady"`
-	BackupReady bool   `json:"backupReady"`
-	Mp3Ready    bool   `json:"mp3Ready"`
-}
-
-var albums = []Album{
+var albums = []A.Album{
 	{ID: "1", Title: "Forever", Artist: "Mystery Skulls", MetaReady: true, BackupReady: true, Mp3Ready: true},
 	{ID: "2", Title: "DDC", Artist: "Nothing but thieves", MetaReady: true, BackupReady: true, Mp3Ready: true},
 }
 
-func getAlbum(c *gin.Context) {
+func GetAlbum(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, albums)
 }
 
-func postAlbum(c *gin.Context) {
-	var newAlbum Album
+func PostAlbum(c *gin.Context) {
+	var newAlbum A.Album
 
 	if err := c.BindJSON(&newAlbum); err != nil {
 		return
@@ -44,7 +36,7 @@ func findAlbumIndex(id string) (int, bool) {
 	return -1, false
 }
 
-func getAlbumByID(c *gin.Context) {
+func GetAlbumByID(c *gin.Context) {
 	id := c.Param("id")
 
 	if index, isPresent := findAlbumIndex(id); isPresent {
@@ -54,22 +46,23 @@ func getAlbumByID(c *gin.Context) {
 	}
 }
 
-func deleteAlbum(c *gin.Context) {
+func DeleteAlbum(c *gin.Context) {
 	requestID := c.Param("id")
 
 	if index, isPresent := findAlbumIndex(requestID); isPresent {
+		name := albums[index].Title
 		albums = append(albums[:index], albums[index+1:]...)
-		c.IndentedJSON(http.StatusOK, gin.H{"message": albums[index].Title + " album deleted "})
+		c.IndentedJSON(http.StatusOK, gin.H{"message": name + " album deleted "})
 		return
 	} else {
 		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Album not found"})
 	}
 }
-func updateAlbum(c *gin.Context) {
+func UpdateAlbum(c *gin.Context) {
 	requestID := c.Param("id")
 
 	if index, isPresent := findAlbumIndex(requestID); isPresent {
-		var newAlbum Album
+		var newAlbum A.Album
 		if err := c.BindJSON(&newAlbum); err != nil {
 			return
 		}
@@ -79,17 +72,4 @@ func updateAlbum(c *gin.Context) {
 	} else {
 		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Album not found"})
 	}
-}
-
-func main() {
-
-	fmt.Println("Staring the server...")
-	router := gin.Default()
-	router.GET("/albums", getAlbum)
-	router.POST("/albums", postAlbum)
-	router.GET("/albums/:id", getAlbumByID)
-	router.PUT("/albums/:id", updateAlbum)
-	router.DELETE("/albums/:id", deleteAlbum)
-	router.Run("localhost:8080")
-
 }
